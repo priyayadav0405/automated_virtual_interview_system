@@ -103,7 +103,7 @@ if submit_button:
         st.success("✅ CV uploaded successfully! Redirecting to the Virtual Interview...")
         
         # Redirect to the Virtual Interview page by displaying questions directly below
-        st.switch_page("pages/page_1.py")
+        st.switch_page("page_1.py")
 
 st.markdown("---")
 st.markdown("Thank you for participating in this virtual interview experience! 🌟")
