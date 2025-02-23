@@ -1,28 +1,10 @@
 import streamlit as st
-from audio_recorder_streamlit import audio_recorder
-import base64
-# import whisper
-import os
-from langchain_groq import ChatGroq
-from gtts import gTTS
-from PIL import Image,ImageSequence
-import time
-import requests
 from streamlit_lottie import st_lottie
-import PyPDF2
-
-
-os.environ["GROQ_API_KEY"] = "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"
-# Initialize the ChatGroq model
-llm = ChatGroq(model="mixtral-8x7b-32768", temperature=0.6, max_tokens=500)
-
-st.set_page_config(
-    page_title="Virtual Interview App",
-    # page_icon="🧊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-    
-)
+import requests
+import os
+from io import BytesIO
+from gtts import gTTS
+import time
 
 
 # Function to load Lottie animation
@@ -32,59 +14,96 @@ def load_lottie_url(url):
         return None
     return response.json()
 
+
+st.set_page_config(page_title="interview_experience",layout="centered",page_icon="dice")
+
+# st.title("🎤🎤🎤 Hello Candidate!! Welcome to the Virtual Interview 💬")
+
+
+st.markdown(
+    """
+    <style>
+    .stButton > button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+    }
+    .stButton > button:hover {
+        transform: scale(1.1);
+        background-color: #45a049;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 # Load a Lottie animation for the header
 lottie_animation = load_lottie_url("https://assets8.lottiefiles.com/packages/lf20_3rwasyjy.json")
+def text_to_audioos(text):
+    """Convert text to audio and return it as a BytesIO object."""
+    tts = gTTS(text, lang='en')
+    audio_bytes = BytesIO()
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)  # Reset the stream to the beginning
+    return audio_bytes
+
+
+def text_to_audio(text, filename):
+    """Convert text to audio using gTTS and save it to a file."""
+    tts = gTTS(text=text, lang='en')
+    tts.save(filename)
+    return filename
+
+
+
+text="Hello Candidate"
+start_message_file = text_to_audio(text, "welcome_message.mp3")
+st.title("🎤🎤🎤 Hello Candidate!!")
+
+with open(start_message_file, "rb") as f:
+        audio_bytes = f.read()
+        st.audio(audio_bytes, format='audio/mp3', autoplay=True)
+
+time.sleep(0.4)
+text="Welcome to the Virtual Interview"
+start_message_file = text_to_audio(text, "welcome_again_message.mp3")
+st.title("Welcome to the Virtual Interview!")
+with open(start_message_file, "rb") as f:
+        audio_bytes = f.read()
+        st.audio(audio_bytes, format='audio/mp3', autoplay=True,)
+# st.title("Welcome to the Virtual Interview!")
 
 # Show Lottie Animation
 if lottie_animation:
     st_lottie(lottie_animation, height=250, key="interview_lottie")
-# st.set_page_config(page_title="Virtual Interview", layout="centered")
 
-st.title("🤖 Virtual Interview Room")
-st.markdown("Welcome to the Virtual Interview! 🎤 Please answer the following questions:")
+st.markdown(("### Please fill in your details: "))
 
+# Form for user input
+with st.form(key='candidate_form'):
+    full_name = st.text_input("👤 Enter your Full Name:")
+    college_name = st.text_input("🎓 Enter your College Name:")
+    qualification = st.text_input("📚 Enter your Highest Qualification:")
+    cv_file = st.file_uploader("📄 Upload your CV in PDF form:", type=["pdf"])
+    submit_button = st.form_submit_button(label='🚀 Submit')
 
+if submit_button:
+    if not full_name or not college_name or not qualification or not cv_file:
+        st.error("⚠️ Please fill in all the fields and upload your CV.")
+    else:
+        # Save the uploaded CV
+        file_path = "resume.pdf"  # Set the desired filename
+        
+        with open(file_path, "wb") as f:
+            f.write(cv_file.read())
+        st.success("✅ CV uploaded successfully! Redirecting to the Virtual Interview...")
+        
+        # Redirect to the Virtual Interview page by displaying questions directly below
+        st.switch_page("pages/page_1.py")
 
-file_path="welcome_message.mp3"
-# Play the TTS audio file in Streamlit
-audio_file = open(file_path, 'rb')
-audio_bytes = audio_file.read()
-st.audio(audio_bytes, format='audio/mp3',start_time=0)
-
-
-
-
-resume_file="resume.pdf"
-if resume_file is not None:
-    # Read the content of the uploaded resume
-    import PyPDF2
-    pdf_reader = PyPDF2.PdfReader(resume_file)
-    resume_text = ''
-    for page in pdf_reader.pages:
-        resume_text += page.extract_text()
-
-
-
-    print(resume_text,"------------------------------------------------------------------------------------------------------***************")
-
-
-    # Analyze the resume and generate questions using ChatGroq
-    prompt = f"Analyze this resume and generate three interview questions based on its content:\n\n{resume_text}"
-    questions_response = llm.invoke(input=prompt)
-    print(questions_response,"-----------------------------------------------------------------------------------------------")
-   
-    print(type(questions_response.content))
-
-    questions_text = questions_response.content 
-    # questions_text=str(questions_text) # Adjust based on actual attribute name
-    questions = questions_text.strip()  # Split into individual questions
-    print("++++++++++++++++++++++++++++++") 
-    if questions:
-         for question in questions:
-            st.markdown(f"**Question:** {question}")
-            answer = st.text_input("Your Answer:")
-            if st.button("Submit Answer"):
-                st.success("Your answer has been recorded!")
-
-
-
+st.markdown("---")
+st.markdown("Thank you for participating in this virtual interview experience! 🌟")
