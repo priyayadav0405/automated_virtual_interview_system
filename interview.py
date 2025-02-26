@@ -153,4 +153,4 @@ if resume_file is not None:
 
 
 if st.button("Submit Interview Responses"):
-    st.success("Thank you for your responses! 🎉 Our team will review them.")
+    st.success("Thank you for your responses! 🎉 Our team will review them")
