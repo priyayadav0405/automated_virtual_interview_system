@@ -1,7 +1,9 @@
 import streamlit as st
 from audio_recorder_streamlit import audio_recorder
 import base64
-# import whisper
+import whisper
+
+
 import os
 from langchain_groq import ChatGroq
 from gtts import gTTS
